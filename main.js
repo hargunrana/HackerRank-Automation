@@ -2,9 +2,6 @@ const puppeteer = require("puppeteer");
 let { email, password } = require("./secrets");
 let cTab;
 
-// let email = "xikibid862@robhung.com";
-// let password = "pepcoding123";
-
 let browserOpen = puppeteer.launch({
     headless: false,
     defaultViewport: null,
@@ -36,7 +33,7 @@ browserOpen
     })
     .then(function () {
         console.log("Password is Typed");
-        //button[data-analytics = "LoginPassword"]
+
         let loggedInPromise = cTab.click(
             'button[data-analytics = "LoginPassword"]'
         );
@@ -44,7 +41,34 @@ browserOpen
     })
     .then(function () {
         console.log("logged into hackerrank successfully");
+
+        // waitAndClick will wait for enitre web page to load then will search the       selector and then will click on the node
+        let openAlgoTabPromise = waitAndClick(
+            'div[data-automation="algorithms"]'
+        );
+        return openAlgoTabPromise;
+    })
+    .then(function () {
+        console.log("Algorithms page opened");
     })
     .catch(function (err) {
-        console.log("Error");
+        console.log(err);
     });
+
+function waitAndClick(selector) {
+    let myPromise = new Promise(function (resolve, reject) {
+        let waitForSelectorPromise = cTab.waitForSelector(selector);
+
+        waitForSelectorPromise
+            .then(function () {
+                let clickPromise = cTab.click(selector);
+                return clickPromise;
+            })
+            .then(function () {
+                resolve();
+            })
+            .catch(function (err) {
+                console.log(err);
+            });
+    });
+}
