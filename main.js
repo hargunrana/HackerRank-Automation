@@ -3,7 +3,7 @@ const puppeteer = require("puppeteer");
 let { email, password } = require("./secrets");
 let cTab;
 
-let browserOpenpromise = puppeteer.launch({
+let browserOpenPromise = puppeteer.launch({
     headless: false,
     defaultViewport: null,
     args: ["--start-maximised"],
@@ -74,13 +74,21 @@ browserOpenPromise
         return linksArrPromise;
     })
     .then(function (allLinks) {
-        // Solving the question
         console.log("links to all questions received");
         console.log(allLinks);
+
+        // Solving the question
+        let quesWillBeSolvedPromise = questionSolver(allLinks[0], 0);
+        return quesWillBeSolvedPromise;
+    })
+    .then(function () {
+        console.log("question is solved");
     })
     .catch(function (err) {
         console.log(err);
     });
+
+// -------------------------> Defined Functions <-------------------------
 
 function waitAndClick(selector) {
     let waitClickPromise = new Promise(function (resolve, reject) {
@@ -101,4 +109,21 @@ function waitAndClick(selector) {
             });
     });
     return waitClickPromise;
+}
+
+function questionSolver(url, idx) {
+    return new Promise(function (resolve, reject) {
+        let fullLink = `http://www.hackerrank.com${url}`;
+
+        let goToQuesPagePromise = cTab.goto(fullLink);
+
+        goToQuesPagePromise
+            .then(function () {
+                console.log("question opened");
+                resolve();
+            })
+            .catch(function (err) {
+                console.log(err);
+            });
+    });
 }
