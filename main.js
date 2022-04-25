@@ -1,14 +1,15 @@
+const { log } = require("console");
 const puppeteer = require("puppeteer");
 let { email, password } = require("./secrets");
 let cTab;
 
-let browserOpen = puppeteer.launch({
+let browserOpenpromise = puppeteer.launch({
     headless: false,
     defaultViewport: null,
     args: ["--start-maximised"],
 });
 
-browserOpen
+browserOpenPromise
     .then(function (browser) {
         console.log("Browser is opened");
 
@@ -49,26 +50,55 @@ browserOpen
         return openAlgoTabPromise;
     })
     .then(function () {
-        console.log("Algorithms page opened");
+        console.log("Algo page is opened");
+        // resolve();
+        let allQuestionPromise = cTab.waitForSelector(
+            'a[data-analytics="ChallengeListChallengeName"]'
+        );
+        return allQuestionPromise;
+    })
+    .then(function () {
+        // .evaluate
+
+        function getAllQuesLinks() {
+            let allElemArr = document.querySelectorAll(
+                'a[data-analytics="ChallengeListChallengeName"]'
+            );
+            let allLinks = [];
+            for (let i = 0; i < allElemArr.length; i++) {
+                allLinks.push(allElemArr[i].getAttribute("href"));
+            }
+            return allLinks;
+        }
+        let linksArrPromise = cTab.evaluate(getAllQuesLinks);
+        return linksArrPromise;
+    })
+    .then(function (allLinks) {
+        // Solving the question
+        console.log("links to all questions received");
+        console.log(allLinks);
     })
     .catch(function (err) {
         console.log(err);
     });
 
 function waitAndClick(selector) {
-    let myPromise = new Promise(function (resolve, reject) {
+    let waitClickPromise = new Promise(function (resolve, reject) {
         let waitForSelectorPromise = cTab.waitForSelector(selector);
 
         waitForSelectorPromise
             .then(function () {
+                console.log("Algo button is found");
                 let clickPromise = cTab.click(selector);
                 return clickPromise;
             })
             .then(function () {
+                console.log("Algo button is clicked");
                 resolve();
             })
             .catch(function (err) {
                 console.log(err);
             });
     });
+    return waitClickPromise;
 }
