@@ -1,5 +1,5 @@
 module.exports = {
-    answer: [
+    answers: [
         `#include <bits/stdc++.h>
           using namespace std;
           
